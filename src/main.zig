@@ -4,39 +4,47 @@ const Game = struct {
     const fps : u8 = 60;
     const width : u16 = 800;
     const height : u16 = 600;
-    ball : Ball,
+    const min_spd: f32 = 200;
+    const max_spd: f32 = 800;
 
     const Ball = struct {
-        x: i16,
-        y: i16,
-        hspeed: i16,
-        vspeed: i16,
-        size: f16 = 8.0,
+        x: f32,
+        y: f32,
+        hspeed: f32,
+        vspeed: f32,
+        size: f32 = 8.0,
 
         fn create () Ball {
             return Ball {
                 .x = Game.width/2,
                 .y = Game.height/2,
-                .hspeed = 0.0,
-                .vspeed = 0.0
+                .hspeed = -Game.min_spd,
+                .vspeed = 000.0
             };
         }
 
-        fn update (self:Ball) void {
-
+        fn update (self:*Ball) void {
+            self.x += GetFrameTime() * self.hspeed;
+            self.y += GetFrameTime() * self.vspeed;
         }
 
         fn draw (self:Ball) void {
-            DrawCircle(self.x, self.y, self.size, WHITE);
+            DrawCircle(
+                @floatToInt(i16, self.x),
+                @floatToInt(i16, self.y),
+                self.size,
+                WHITE
+            );
         }
     };
 
     pub fn app () void {
         InitWindow(Game.width, Game.height, "Pong Game");
         SetTargetFPS(Game.fps);
-        
+
+        var ball = Ball.create();
         var application = Game {
-            .ball = Ball.create()
+            .ball = &ball
         };
 
         while(!WindowShouldClose()){
@@ -59,6 +67,8 @@ const Game = struct {
 
         EndDrawing();
     }
+
+    ball : *Ball,
 };
 
 pub fn main() anyerror!void {
