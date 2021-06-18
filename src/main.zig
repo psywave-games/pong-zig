@@ -1,4 +1,5 @@
 usingnamespace @import("raylib");
+usingnamespace @import("raylib-math");
 
 const Game = struct {
     const fps : u8 = 60;
@@ -6,6 +7,30 @@ const Game = struct {
     const height : u16 = 600;
     const min_spd: f32 = 200;
     const max_spd: f32 = 800;
+
+    const Player = struct {
+        x: f32 = 0.0,
+        y: f32 = Game.height/2,
+        width: i32 = 10,
+        height: i32 = 80,
+
+        fn update (self:*Player) void {
+            var down : i2 = @boolToInt(IsKeyDown(KeyboardKey.KEY_DOWN));
+            var up : i2 = @boolToInt(IsKeyDown(KeyboardKey.KEY_UP));
+            var speed : f32 = @intToFloat(f32, down - up) * GetFrameTime() * Game.min_spd * 3;
+            self.y = Clamp(self.y + speed, 0, Game.height);
+        }
+
+        fn draw (self:*Player) void {
+            DrawRectangle(
+                @floatToInt(i16, self.x),
+                @floatToInt(i16, self.y) - self.height,
+                self.width,
+                self.height * 2,
+                WHITE
+            );
+        }
+    };
 
     const Ball = struct {
         x: f32,
@@ -42,8 +67,11 @@ const Game = struct {
         InitWindow(Game.width, Game.height, "Pong Game");
         SetTargetFPS(Game.fps);
 
+        var player = Player {};
         var ball = Ball.create();
+
         var application = Game {
+            .player = &player,
             .ball = &ball
         };
 
@@ -56,6 +84,7 @@ const Game = struct {
     }
 
     fn update(self:Game) void {
+        self.player.update();
         self.ball.update();
     }
     
@@ -63,11 +92,13 @@ const Game = struct {
         BeginDrawing();
 
         ClearBackground(BLACK);
+        self.player.draw();
         self.ball.draw();
 
         EndDrawing();
     }
 
+    player : *Player,
     ball : *Ball,
 };
 
